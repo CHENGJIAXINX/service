@@ -25,8 +25,6 @@
     <orderEntry type="library" name="Maven: org.t-io:tio-utils:3.7.1.v20210106-RELEASE" level="project" />
     <orderEntry type="library" name="Maven: com.alibaba:fastjson:1.2.75" level="project" />
     <orderEntry type="library" name="Maven: com.github.ben-manes.caffeine:caffeine:2.8.8" level="project" />
-    <orderEntry type="library" name="Maven: cglib:cglib:3.3.0" level="project" />
-    <orderEntry type="library" name="Maven: org.ow2.asm:asm:9.0" level="project" />
     <orderEntry type="module" module-name="tio-site-service" />
     <orderEntry type="library" name="Maven: org.aplus:aplus-captcha:10.8.8" level="project" />
     <orderEntry type="library" name="Maven: com.github.oshi:oshi-core:5.3.7" level="project" />
