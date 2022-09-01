@@ -1,0 +1,149 @@
+package org.tio.sitexxx.web.server.controller.base.oauth2;
+
+import java.net.URI;
+
+import org.apache.oltu.oauth2.as.issuer.MD5Generator;
+import org.apache.oltu.oauth2.as.issuer.OAuthIssuerImpl;
+import org.apache.oltu.oauth2.as.response.OAuthASResponse;
+import org.apache.oltu.oauth2.common.OAuth;
+import org.apache.oltu.oauth2.common.error.OAuthError;
+import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
+import org.apache.oltu.oauth2.common.message.OAuthResponse;
+import org.apache.oltu.oauth2.common.message.types.ResponseType;
+import org.apache.oltu.oauth2.common.utils.OAuthUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.tio.http.common.HttpRequest;
+import org.tio.http.common.HttpResponse;
+import org.tio.http.common.HttpResponseStatus;
+import org.tio.http.server.annotation.RequestPath;
+import org.tio.http.server.util.Resps;
+import org.tio.sitexxx.service.model.main.Oauth2Client;
+import org.tio.sitexxx.service.service.base.oauth2.Oauth2Service;
+
+/**
+ * 服务器端参考实现：<br>
+ * https://github.com/ameizi/oltu-oauth2-example
+ * https://blog.csdn.net/jing12062011/article/details/78147306
+ * <br>
+ * 
+ * 客户端集合：<br>
+ * https://github.com/scribejava/scribejava<br>
+ * https://github.com/scribejava/scribejava/wiki/getting-started<br>
+ * 
+ * 
+ * @author tanyaowu
+ *
+ */
+@RequestPath(value = "/oauth2")
+public class Oauth2Controller {
+	@SuppressWarnings("unused")
+	private static Logger log = LoggerFactory.getLogger(Oauth2Controller.class);
+
+	/**
+	 * @param args
+	 * @author tanyaowu
+	 */
+	public static void main(String[] args) {
+
+	}
+
+	/**
+	 *
+	 * @author tanyaowu
+	 */
+	public Oauth2Controller() {
+	}
+
+	//  新浪微博的
+	//	public String authorize(String response_type, String state) throws WeiboException {
+	//	    return WeiboConfig.getValue("authorizeURL").trim() + "?client_id="
+	//	        + WeiboConfig.getValue("client_ID").trim() + "&redirect_uri="
+	//	        + WeiboConfig.getValue("redirect_URI").trim() + "&response_type=" + response_type
+	//	        + "&state=" + state;
+	//	  }
+
+	/**
+	 * 获取授权码
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestPath(value = "/code")
+	public HttpResponse code(HttpRequest request) throws Exception {
+		try {
+			//构建OAuth 授权请求
+			OAuthRequest oauthRequest = new OAuthRequest(request);
+			String clientid = oauthRequest.getClientId();
+			Oauth2Client oauth2Client = Oauth2Service.me.getByClientid(clientid);
+			if (oauth2Client == null) {
+				OAuthResponse response = OAuthASResponse.errorResponse(HttpResponseStatus.C400.status).setError(OAuthError.TokenResponse.INVALID_CLIENT)
+						.setErrorDescription(Constants.INVALID_CLIENT_ID).buildJSONMessage();
+
+				return Resps.json(request, response.getBody());
+			}
+			
+			//https://graph.qq.com/oauth2.0/show?which=Login&display=pc&client_id=101466082&redirect_uri=https://www.t-io.org/api/tlogin/cb/p/1.php&response_type=code&state=612f03518a524281a13521232dcdc135&scope=get_user_info,add_topic,add_one_blog,add_album,upload_pic,list_album,add_share,check_page_fans,add_t,add_pic_t,del_t,get_repost_list,get_info,get_other_info,get_fanslist,get_idollist,add_idol,del_ido,get_tenpay_addr
+			
+			//  新浪微博的
+			//        	public String authorize(String response_type, String state) throws WeiboException {
+			//    	    return WeiboConfig.getValue("authorizeURL").trim() + "?client_id="
+			//    	        + WeiboConfig.getValue("client_ID").trim() + "&redirect_uri="
+			//    	        + WeiboConfig.getValue("redirect_URI").trim() + "&response_type=" + response_type
+			//    	        + "&state=" + state;
+
+			//如果用户没有登录，跳转到登陆页面
+			if (!login(request)) {//登录失败时跳转到登陆页面
+				model.addAttribute("client", clientService.findByClientId(oauthRequest.getClientId()));
+				return "oauth2login";
+			}
+
+			String username = request.getParameter("username"); //获取用户名
+			//生成授权码
+			String authorizationCode = null;
+			//responseType目前仅支持CODE，另外还有TOKEN
+			String responseType = oauthRequest.getParam(OAuth.OAUTH_RESPONSE_TYPE);
+			if (responseType.equals(ResponseType.CODE.toString())) {
+				OAuthIssuerImpl oauthIssuerImpl = new OAuthIssuerImpl(new MD5Generator());
+				authorizationCode = oauthIssuerImpl.authorizationCode();
+				oAuthService.addAuthCode(authorizationCode, username);
+			}
+
+			//进行OAuth响应构建
+			OAuthASResponse.OAuthAuthorizationResponseBuilder builder = OAuthASResponse.authorizationResponse(request, HttpServletResponse.SC_FOUND);
+			//设置授权码
+			builder.setCode(authorizationCode);
+			//得到到客户端重定向地址
+			String redirectURI = oauthRequest.getParam(OAuth.OAUTH_REDIRECT_URI);
+
+			//构建响应
+			final OAuthResponse response = builder.location(redirectURI).buildQueryMessage();
+
+			//根据OAuthResponse返回ResponseEntity响应
+			headers = new HttpHeaders();
+			headers.set("Content-Type", "application/json; charset=utf-8");
+			headers.setLocation(new URI(response.getLocationUri()));
+			return new ResponseEntity(headers, HttpStatus.valueOf(response.getResponseStatus()));
+		} catch (OAuthProblemException e) {
+
+			//出错处理
+			String redirectUri = e.getRedirectUri();
+			if (OAuthUtils.isEmpty(redirectUri)) {
+				//告诉客户端没有传入redirectUri直接报错
+				HttpHeaders headers = new HttpHeaders();
+				headers.add("Content-Type", "application/json; charset=utf-8");
+				Status status = new Status();
+				status.setCode(HttpStatus.NOT_FOUND.value());
+				status.setMsg(Constants.INVALID_REDIRECT_URI);
+				Gson gson = new GsonBuilder().create();
+				return new ResponseEntity(gson.toJson(status), headers, HttpStatus.NOT_FOUND);
+			}
+			//返回错误消息（如?error=）
+			final OAuthResponse response = OAuthASResponse.errorResponse(HttpServletResponse.SC_FOUND).error(e).location(redirectUri).buildQueryMessage();
+			HttpHeaders headers = new HttpHeaders();
+			headers.setLocation(new URI(response.getLocationUri()));
+			return new ResponseEntity(headers, HttpStatus.valueOf(response.getResponseStatus()));
+		}
+	}
+
+}

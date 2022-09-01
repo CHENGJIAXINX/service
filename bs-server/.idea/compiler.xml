@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="tio-site-im-common" />
+        <module name="tio-site-all" />
+        <module name="tio-site-service" />
+        <module name="tio-site-http-server-api" />
+        <module name="jfinal-activerecord" />
+        <module name="tio-site-service-common" />
+        <module name="tio-site-im-server" />
+        <module name="tio-site-http-server-view" />
+        <module name="tio-site-service-pay" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="jfinal-activerecord" target="1.8" />
+      <module name="tio-site-all" target="1.8" />
+      <module name="tio-site-http-server-api" target="1.8" />
+      <module name="tio-site-http-server-view" target="1.8" />
+      <module name="tio-site-im-common" target="1.8" />
+      <module name="tio-site-im-server" target="1.8" />
+      <module name="tio-site-parent" target="1.5" />
+      <module name="tio-site-service" target="1.8" />
+      <module name="tio-site-service-common" target="1.8" />
+      <module name="tio-site-service-pay" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="jfinal-activerecord" options="-g" />
+      <module name="tio-site-all" options="-g" />
+      <module name="tio-site-http-server-api" options="-g" />
+      <module name="tio-site-http-server-view" options="-g" />
+      <module name="tio-site-im-common" options="-g" />
+      <module name="tio-site-im-server" options="-g" />
+      <module name="tio-site-service" options="-g" />
+      <module name="tio-site-service-common" options="-g" />
+      <module name="tio-site-service-pay" options="-g" />
+    </option>
+  </component>
+</project>

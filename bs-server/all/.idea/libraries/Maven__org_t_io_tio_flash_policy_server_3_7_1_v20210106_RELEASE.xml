@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.t-io:tio-flash-policy-server:3.7.1.v20210106-RELEASE">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/t-io/tio-flash-policy-server/3.7.1.v20210106-RELEASE/tio-flash-policy-server-3.7.1.v20210106-RELEASE.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/org/t-io/tio-flash-policy-server/3.7.1.v20210106-RELEASE/tio-flash-policy-server-3.7.1.v20210106-RELEASE-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/t-io/tio-flash-policy-server/3.7.1.v20210106-RELEASE/tio-flash-policy-server-3.7.1.v20210106-RELEASE-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
