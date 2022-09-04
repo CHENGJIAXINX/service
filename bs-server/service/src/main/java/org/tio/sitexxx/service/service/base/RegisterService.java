@@ -254,7 +254,7 @@ public class RegisterService {
             user.setEmail(user.getEmail());
             user.setEmailpwd(user.getEmail());
             user.setEmailbindflag(Const.YesOrNo.YES);
-            user.setLoginname(null);
+            user.setLoginname(loginname);
 //            user.setLoginname(user.getEmail());
         }/*else if (Objects.equals(regType, Const.RegisterType.EMAIL)) {
             if (loginname.length() > 48) {
@@ -270,7 +270,7 @@ public class RegisterService {
             if (!CommonUtils.isPhone(loginname)){
                 return Resp.fail("不是合法的手机号码");
             }
-            user.setLoginname(null);
+            user.setLoginname(loginname);
             user.setPhone(loginname);
             user.setPhonepwd(pwd);
             user.setPhonebindflag(Const.YesOrNo.YES);

@@ -69,21 +69,21 @@ public class RegisterController {
     @RequestPath(value = "/accountRegister")
     public Resp accountRegister(User user, HttpRequest request) throws Exception {
         String loginname = user.getLoginname();
-        if (loginname.length() < 5){
+        if (loginname.length() < 5) {
             return Resp.fail("账号最少5位");
         }
-        if (!Pattern.matches("^[a-z0-9A-Z]+$", loginname)){
+        if (!Pattern.matches("^[a-z0-9A-Z]+$", loginname)) {
             return Resp.fail("不可包含特殊字符");
         }
-        if (NumberUtil.isNumber(loginname)){
+        if (NumberUtil.isNumber(loginname)) {
             return Resp.fail("账号不可以为纯数字");
         }
         User tmpUser = UserService.ME.getByLoginname(loginname, null);
-        if (tmpUser != null && tmpUser.getId() != null){
+        if (tmpUser != null && tmpUser.getId() != null) {
             return Resp.fail("账号已存在");
         }
-        if (user.getId() != null){
-            if (UserService.ME.getById(user.getId()) != null){
+        if (user.getId() != null) {
+            if (UserService.ME.getById(user.getId()) != null) {
                 return Resp.fail("ID已存在");
             }
         }
@@ -116,16 +116,16 @@ public class RegisterController {
      */
     @RequestPath(value = "/{regType}", forward = "/register/submit")
     public Resp register(User user, Byte regType, HttpRequest request) throws Exception {
-        System.out.println("regType注册请求："+JSON.toJSONString(user));
+        System.out.println("regType注册请求：" + JSON.toJSONString(user));
         if (user == null) {
             return Resp.fail(RetUtils.INVALID_PARAMETER);
         }
 
-        if (regType == 1){
+        if (regType == 1) {
             return accountRegister(user, request);
         }
 
-        System.out.println("注册请求："+JSON.toJSONString(user));
+        System.out.println("注册请求：" + JSON.toJSONString(user));
         // 是否开启邀请码 1：开启 2：关闭 默认：2
         String inviteEnable = ConfService.getString("inviteEnable", "2");
         if ("1".equals(inviteEnable)) {
@@ -133,8 +133,8 @@ public class RegisterController {
                 return Resp.fail(RetUtils.INVALID_INVITE_CODE);
             }
         }
-        if (ConfService.getInt("validateType", 1) == 2){
-            if (StrUtil.isBlank(user.getEmail())){
+        if (ConfService.getInt("validateType", 1) == 2) {
+            if (StrUtil.isBlank(user.getEmail())) {
                 return Resp.fail("邮箱不能为空");
             }
         }
@@ -225,43 +225,44 @@ public class RegisterController {
                 log.error("用户验证码code不存在");
                 return Resp.fail(RetUtils.INVALID_PARAMETER);
             }
-            if (ConfService.getInt("validateType", 1) == 2){
-                if (!isCodePass){
+            if (ConfService.getInt("validateType", 1) == 2) {
+                if (!isCodePass) {
                     ICache cache = Caches.getCache(CacheConfig.EMAIL_AUTHCODE);
                     String email = cache.get(user.getCode(), String.class);
-                    if (StrUtil.isBlank(email)){
+                    if (StrUtil.isBlank(email)) {
                         return Resp.fail("验证码不存在");
                     }
-                    if (!email.equals(user.getEmail())){
+                    if (!email.equals(user.getEmail())) {
                         return Resp.fail("验证码不存在，请重试");
                     }
                 }
                 User user1 = UserService.ME.getByEmail(user.getEmail(), (byte) 1);
-                if (user1 != null){
+                if (user1 != null) {
                     return Resp.fail("邮箱已注册");
                 }
-            }else {
+            } else {
                 Resp beforeCheck = SmsController.bizPhoneCheck(BaseSmsVo.BaseSmsBizType.REGISTER, user.getLoginname(), request);
                 if (!beforeCheck.isOk()) {
                     return beforeCheck;
                 }
-                if (!isCodePass){
+                if (!isCodePass) {
+                    //校验验证码
                     Ret ret = SmsService.me.checkCode(user.getLoginname(), BaseSmsVo.BaseSmsBizType.REGISTER, user.getCode(), null, false);
                     if (ret.isFail()) {
                         return Resp.fail(RetUtils.getRetMsg(ret));
                     }
                 }
             }
-        }else {
+        } else {
             String loginname = user.getLoginname();
 //            if (user.getPhonepwd() == null){
 //                return Resp.fail("超级密码不能为空");
 //            }
-            if (NumberUtil.isNumber(loginname)){
+            if (NumberUtil.isNumber(loginname)) {
                 return Resp.fail("账号不可以为纯数字");
             }
             User tmpUser = UserService.ME.getByLoginname(loginname, null);
-            if (tmpUser != null && tmpUser.getId() != null){
+            if (tmpUser != null && tmpUser.getId() != null) {
                 return Resp.fail("账号已存在");
             }
         }
@@ -282,8 +283,6 @@ public class RegisterController {
         }
         return resp;
     }
-
-
 
 
     /**
@@ -388,10 +387,10 @@ public class RegisterController {
         IpInfo ipInfo = IpInfoService.ME.save(request.getClientIp());
         user.setIpInfo(ipInfo);
         // 生成注册用户的 uid / 推荐码
-        if (user.getId() == null){
+        if (user.getId() == null) {
             int uid = generateUid();
             user.setId(uid);
-            if (!Const.MILSERVER){
+            if (!Const.MILSERVER) {
                 user.setInvitecode(String.valueOf(uid));
             }
         }
@@ -435,23 +434,23 @@ public class RegisterController {
      */
     public static void p2pAfterRegister(User user, HttpRequest request) {
         // 加推荐人为好友并发送一条消息
-        if (user.getInviteUid() != null){
-            if (Const.MILSERVER){
+        if (user.getInviteUid() != null) {
+            if (Const.MILSERVER) {
                 System.out.printf("推送用户为：%s,邀请码为：%s%n", user.getInviteUid(), user.getInviteCode());
                 UserInviteAttr userInviteAttr = UserInviteAttr.dao.findFirst("select * from user_invite_attr where uid = ? and status = 1", user.getInviteUid());
-                if (userInviteAttr != null){
+                if (userInviteAttr != null) {
                     try {
-                        if (userInviteAttr.getFuid() != null){
-                            System.out.println("要添加的邀请码配置用户ID集合为："+userInviteAttr.getFuid());
+                        if (userInviteAttr.getFuid() != null) {
+                            System.out.println("要添加的邀请码配置用户ID集合为：" + userInviteAttr.getFuid());
                             String[] split = userInviteAttr.getFuid().trim().split(",");
-                            if (split.length > 0){
+                            if (split.length > 0) {
                                 String fuidStr = split[RandomUtil.getRandom().nextInt(0, split.length)].trim();
                                 User toUser = UserService.ME.getById(fuidStr);
                                 if (toUser == null) {
-                                    System.out.println("要添加的邀请码配置用户不存在："+fuidStr);
-                                }else {
+                                    System.out.println("要添加的邀请码配置用户不存在：" + fuidStr);
+                                } else {
                                     FriendService.me.addFriend(user, Integer.parseInt(fuidStr));
-                                    if (userInviteAttr.getMessage() != null){
+                                    if (userInviteAttr.getMessage() != null) {
                                         Ret ret = ChatService.me.actFdChatItems(Integer.parseInt(fuidStr), user.getId());
                                         WxChatItems chatItems = RetUtils.getOkTData(ret, "chat");
                                         if (WxSynApi.isSynVersion()) {
@@ -493,19 +492,19 @@ public class RegisterController {
 //                                            Const.ContentType.TEXT, Integer.parseInt(fuidStr), user.getId(), Const.YesOrNo.NO);
 //                                }
 //                            }
-                            }
-                        if (userInviteAttr.getGid() != null && userInviteAttr.getGid() != 0){
-                            System.out.println("邀请码配置加入群聊："+userInviteAttr.getGid());
+                        }
+                        if (userInviteAttr.getGid() != null && userInviteAttr.getGid() != 0) {
+                            System.out.println("邀请码配置加入群聊：" + userInviteAttr.getGid());
                             WxGroup byGroupid = GroupService.me.getByGroupid(userInviteAttr.getGid().longValue());
-                            if (byGroupid != null){
+                            if (byGroupid != null) {
                                 Integer uid = byGroupid.getUid();
                                 User byId = UserService.ME.getById(uid);
                                 Ret ret = null;
-                                ret = GroupService.me.joinGroup(byId, userInviteAttr.getGid().longValue(), String.valueOf(user.getId()),null);
+                                ret = GroupService.me.joinGroup(byId, userInviteAttr.getGid().longValue(), String.valueOf(user.getId()), null);
                                 Short joinnum = RetUtils.getOkTData(ret, "joinnum");
-                                if(joinnum != null && joinnum != 0) {
+                                if (joinnum != null && joinnum != 0) {
                                     User msgUser = byId;
-                                    WxChatApi.joinGroup(request,msgUser,userInviteAttr.getGid().longValue(),String.valueOf(user.getId()), RetUtils.getOkTData(ret),RetUtils.getOkTData(ret, "rebind"),false);
+                                    WxChatApi.joinGroup(request, msgUser, userInviteAttr.getGid().longValue(), String.valueOf(user.getId()), RetUtils.getOkTData(ret), RetUtils.getOkTData(ret, "rebind"), false);
                                 }
                             }
                         }
@@ -513,9 +512,9 @@ public class RegisterController {
                         e.printStackTrace();
                     }
                 }
-            }else {
+            } else {
                 Ret chatRet = ChatService.me.actFdChatItems(user.getInviteUid(), user.getId());
-                System.out.println("默认加邀请用户为好友："+user.getInviteUid());
+                System.out.println("默认加邀请用户为好友：" + user.getInviteUid());
                 if (chatRet.isOk()) {
                     WxChatItems chatItem = RetUtils.getOkTData(chatRet, "chat");
                     if (null != chatItem) {
@@ -536,11 +535,11 @@ public class RegisterController {
 
         String str = ConfService.getString("defaultFriendUid", null);
         if (str != null) {
-            String spitStr = str.contains("/")?"/":",";
+            String spitStr = str.contains("/") ? "/" : ",";
             String[] split = str.trim().split(spitStr);
             try {
 //                String rdnUid = split[RandomUtil.randomInt(0, split.length)];
-                if (lastFriendIndex > split.length - 1){
+                if (lastFriendIndex > split.length - 1) {
                     lastFriendIndex = 0;
                 }
                 String rdnUid = split[lastFriendIndex];
@@ -560,7 +559,7 @@ public class RegisterController {
                                 Const.ContentType.TEXT, Integer.parseInt(rdnUid), user.getId(), Const.YesOrNo.NO);
                     }
                 }
-            }catch (Exception e){
+            } catch (Exception e) {
                 log.error("defaultFriendUid 失败：", e);
             }
 
@@ -568,17 +567,17 @@ public class RegisterController {
 
         //默认加群
         String defaultGroupId = ConfService.getString("defaultGroupId", "0");
-        if (defaultGroupId != null && defaultGroupId != ""){
+        if (defaultGroupId != null && defaultGroupId != "") {
             String[] split = defaultGroupId.split(",");
-            for (String groupIdStr : split){
-                if (groupIdStr.equals("0")){
+            for (String groupIdStr : split) {
+                if (groupIdStr.equals("0")) {
                     continue;
                 }
-                if (!NumberUtil.isNumber(groupIdStr)){
+                if (!NumberUtil.isNumber(groupIdStr)) {
                     continue;
                 }
                 WxGroup byGroupid = GroupService.me.getByGroupid(Long.parseLong(groupIdStr));
-                if (byGroupid == null){
+                if (byGroupid == null) {
                     continue;
                 }
                 Integer uid = byGroupid.getUid();
@@ -586,13 +585,13 @@ public class RegisterController {
                 Byte devicetype = WebUtils.getRequestExt(request).getDeviceType();
                 Ret ret = null;
                 try {
-                    ret = GroupService.me.joinGroup(byId, Long.parseLong(groupIdStr), String.valueOf(user.getId()),null);
+                    ret = GroupService.me.joinGroup(byId, Long.parseLong(groupIdStr), String.valueOf(user.getId()), null);
                     Short joinnum = RetUtils.getOkTData(ret, "joinnum");
                     Byte nameUpdate = RetUtils.getOkTData(ret, "nameupdate");
-                    if(joinnum != null && joinnum != 0) {
+                    if (joinnum != null && joinnum != 0) {
                         User msgUser = byId;
 //                        boolean auot = auotUpdateGroupInfo(request,devicetype,groupid, nameUpdate, joinnum, msgUser);
-                        WxChatApi.joinGroup(request,msgUser,Long.parseLong(groupIdStr),String.valueOf(user.getId()), RetUtils.getOkTData(ret),RetUtils.getOkTData(ret, "rebind"),false);
+                        WxChatApi.joinGroup(request, msgUser, Long.parseLong(groupIdStr), String.valueOf(user.getId()), RetUtils.getOkTData(ret), RetUtils.getOkTData(ret, "rebind"), false);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -600,7 +599,6 @@ public class RegisterController {
 
             }
         }
-
 
 
     }
@@ -614,6 +612,6 @@ public class RegisterController {
 //            System.out.println("fuidStr==>"+fuidStr);
 //        }
         String rdnUid = split[RandomUtil.randomInt(0, split.length)];
-        System.out.println("rdnUid==>"+rdnUid);
+        System.out.println("rdnUid==>" + rdnUid);
     }
 }
