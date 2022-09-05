@@ -24,9 +24,14 @@ public class PropInit {
 		synchronized (log) {
 			if (!inited) {
 				P.clear();
-				P.use("app.properties");
-				P.append("app-env.properties");
-				P.append("app-host.properties");
+				P.use("application.properties");
+				//P.append("app-host.properties");
+				// 动态读取环境
+				String profile = P.get("tio.profile");
+				P.append("application-"+profile+".properties");
+//				P.use("app.properties");
+//				P.append("app-env.properties");
+//				P.append("app-host.properties");
 
 				//设置一下，用于生成高性能的uuid，这里耦合度略高，后面再优化一下
 				Integer workerid = P.getInt("uuid.workerid");
